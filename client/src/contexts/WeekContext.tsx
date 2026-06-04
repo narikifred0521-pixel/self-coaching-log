@@ -7,6 +7,7 @@ import { nanoid } from "nanoid";
 import type { WeekLog } from "@/lib/types";
 import {
   loadAllWeeks,
+  saveAllWeeks,
   saveWeek,
   deleteWeek,
   buildEmptyDailyLogs,
@@ -22,6 +23,7 @@ interface WeekContextValue {
   updateWeek: (week: WeekLog) => void;
   removeWeek: (id: string) => void;
   getWeek: (id: string) => WeekLog | undefined;
+  importWeeks: (incoming: WeekLog[]) => void;
 }
 
 const WeekContext = createContext<WeekContextValue | null>(null);
@@ -75,6 +77,12 @@ export function WeekProvider({ children }: { children: React.ReactNode }) {
     [weeks]
   );
 
+  /** Gist pullなど外部からデータを一括インポートする */
+  const importWeeks = useCallback((incoming: WeekLog[]) => {
+    saveAllWeeks(incoming);
+    setWeeks(incoming);
+  }, []);
+
   return (
     <WeekContext.Provider
       value={{
@@ -85,6 +93,7 @@ export function WeekProvider({ children }: { children: React.ReactNode }) {
         updateWeek,
         removeWeek,
         getWeek,
+        importWeeks,
       }}
     >
       {children}
