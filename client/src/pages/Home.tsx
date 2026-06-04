@@ -7,27 +7,48 @@
 
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Plus, ChevronRight, Download, Trash2, BookOpen } from "lucide-react";
+import { Plus, ChevronRight, Download, Trash2, BookOpen, Cloud, Copy } from "lucide-react";
 import { useWeek } from "@/contexts/WeekContext";
 import { getThisMonday, buildWeekRange } from "@/lib/storage";
+import { getGistToken } from "@/lib/gist";
 import { cn } from "@/lib/utils";
+import GistSyncDialog from "@/components/GistSyncDialog";
 
 export default function Home() {
-  const { weeks, createWeek, removeWeek, setCurrentWeekId } = useWeek();
+  const { weeks, createWeek, updateWeek, removeWeek, setCurrentWeekId } = useWeek();
   const [, navigate] = useLocation();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [gistOpen, setGistOpen] = useState(false);
+  const isGistConnected = !!getGistToken();
 
   const thisMonday = getThisMonday();
   const thisWeek = weeks.find((w) => w.startDate === thisMonday);
+
+  // 直近の過去週（前週）
+  const lastWeek = weeks
+    .filter((w) => w.startDate < thisMonday)
+    .sort((a, b) => b.startDate.localeCompare(a.startDate))[0];
 
   const handleOpenWeek = (id: string) => {
     setCurrentWeekId(id);
     navigate(`/week/${id}`);
   };
 
-  const handleCreateThisWeek = () => {
+  const handleCreateThisWeek = (copyGoals = false) => {
     const w = createWeek(thisMonday);
-    navigate(`/week/${w.id}`);
+    if (copyGoals && lastWeek) {
+      const copied = {
+        ...w,
+        longTermGoals: lastWeek.longTermGoals,
+        midTermGoals: lastWeek.midTermGoals,
+        shortTermGoals: lastWeek.shortTermGoals,
+        flowReason: lastWeek.flowReason,
+      };
+      updateWeek(copied);
+      navigate(`/week/${copied.id}`);
+    } else {
+      navigate(`/week/${w.id}`);
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -39,6 +60,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
+      <GistSyncDialog open={gistOpen} onOpenChange={setGistOpen} />
+
       {/* ヘッダー */}
       <header className="px-4 pt-10 pb-5">
         <p className="text-xs font-medium text-[#C1785A] tracking-widest uppercase mb-1">
@@ -71,14 +94,26 @@ export default function Home() {
               highlight
             />
           ) : (
-            <button
-              type="button"
-              onClick={handleCreateThisWeek}
-              className="w-full flex items-center justify-center gap-2 py-5 rounded-2xl border-2 border-dashed border-[#D9D4CC] text-[#C1785A] hover:border-[#C1785A] hover:bg-[#FDF7F4] transition active:scale-98"
-            >
-              <Plus size={18} />
-              <span className="text-sm font-medium">今週（{buildWeekRange(thisMonday)}）を作成</span>
-            </button>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => handleCreateThisWeek(false)}
+                className="w-full flex items-center justify-center gap-2 py-5 rounded-2xl border-2 border-dashed border-[#D9D4CC] text-[#C1785A] hover:border-[#C1785A] hover:bg-[#FDF7F4] transition active:scale-98"
+              >
+                <Plus size={18} />
+                <span className="text-sm font-medium">今週（{buildWeekRange(thisMonday)}）を作成</span>
+              </button>
+              {lastWeek && (
+                <button
+                  type="button"
+                  onClick={() => handleCreateThisWeek(true)}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-[#D9D4CC] text-[#9A9490] hover:border-[#4A7C59] hover:text-[#4A7C59] hover:bg-[#F3F8F5] transition active:scale-98 text-sm"
+                >
+                  <Copy size={14} />
+                  <span>前週の目標をコピーして作成</span>
+                </button>
+              )}
+            </div>
           )}
         </section>
 
@@ -103,6 +138,28 @@ export default function Home() {
             </div>
           </section>
         )}
+
+        {/* クラウド同期ボタン */}
+        <section>
+          <button
+            type="button"
+            onClick={() => setGistOpen(true)}
+            className={cn(
+              "w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border bg-white transition active:scale-95",
+              isGistConnected
+                ? "border-[#4A7C59]/50 text-[#4A7C59] hover:border-[#4A7C59]"
+                : "border-[#E8E3DC] text-[#5A5550] hover:border-[#C1785A] hover:text-[#C1785A]"
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <Cloud size={16} />
+              <span className="text-sm font-medium">
+                {isGistConnected ? "クラウド同期（接続中・自動保存ON）" : "クラウド同期を設定"}
+              </span>
+            </div>
+            <ChevronRight size={16} className="text-[#C4BFB9]" />
+          </button>
+        </section>
 
         {/* エクスポートボタン */}
         {weeks.length > 0 && (

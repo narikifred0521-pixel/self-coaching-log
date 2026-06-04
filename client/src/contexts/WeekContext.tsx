@@ -3,6 +3,7 @@
  */
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { useAutoGistSync } from "@/hooks/useAutoGistSync";
 import { nanoid } from "nanoid";
 import type { WeekLog } from "@/lib/types";
 import {
@@ -82,6 +83,9 @@ export function WeekProvider({ children }: { children: React.ReactNode }) {
     saveAllWeeks(incoming);
     setWeeks(incoming);
   }, []);
+
+  // weeksが変わるたびにGistへ自動同期（トークン未設定時はスキップ）
+  useAutoGistSync(weeks);
 
   return (
     <WeekContext.Provider
