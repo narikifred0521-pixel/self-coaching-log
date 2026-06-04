@@ -50,7 +50,7 @@ export function DayCard({ log, onChange }: DayCardProps) {
   };
 
   const hasData =
-    log.emotion || log.action || log.flowState || log.meditation || log.weightChecked || log.rating;
+    log.emotion || log.action || log.flowState || log.meditation || log.weightChecked || log.gym || log.rating;
 
   const flowColor =
     log.flowState === "Flow"
@@ -149,9 +149,9 @@ export function DayCard({ log, onChange }: DayCardProps) {
               認知・習慣
             </h4>
             <div className="space-y-3">
-              <div className="flex items-center gap-6">
+              <div className="flex flex-wrap items-start gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-[#5A5550] mb-1">瞑想</label>
+                  <label className="block text-sm font-medium text-[#5A5550] mb-1">瞥想</label>
                   <ToggleButtonGroup
                     options={HABIT_OPTIONS}
                     value={log.meditation}
@@ -164,6 +164,14 @@ export function DayCard({ log, onChange }: DayCardProps) {
                     options={HABIT_OPTIONS}
                     value={log.weightChecked}
                     onChange={(v) => update("weightChecked", v)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#5A5550] mb-1">🏋️ジム</label>
+                  <ToggleButtonGroup
+                    options={HABIT_OPTIONS}
+                    value={log.gym}
+                    onChange={(v) => update("gym", v)}
                   />
                 </div>
               </div>

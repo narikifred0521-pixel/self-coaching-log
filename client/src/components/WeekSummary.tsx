@@ -21,7 +21,7 @@ interface WeekSummaryProps {
 
 function rate(
   logs: WeekLog["dailyLogs"],
-  key: "flowState" | "meditation" | "weightChecked",
+  key: "flowState" | "meditation" | "weightChecked" | "gym",
   match: string
 ) {
   const filled = logs.filter((d) => d[key] !== "");
@@ -51,11 +51,12 @@ export function WeekSummary({ week }: WeekSummaryProps) {
   const flowRate = rate(logs, "flowState", "Flow");
   const meditationRate = rate(logs, "meditation", "done");
   const weightRate = rate(logs, "weightChecked", "done");
+  const gymRate = rate(logs, "gym", "done");
   const dist = ratingDist(logs);
   const hasRating = Object.values(dist).some((v) => v > 0);
 
   const hasAnyData =
-    flowRate !== null || meditationRate !== null || weightRate !== null || hasRating;
+    flowRate !== null || meditationRate !== null || weightRate !== null || gymRate !== null || hasRating;
 
   if (!hasAnyData) return null;
 
@@ -78,6 +79,9 @@ export function WeekSummary({ week }: WeekSummaryProps) {
         )}
         {weightRate !== null && (
           <Chip label="⚖️ 体重測定率" value={`${weightRate}%`} color="#5A7BA8" />
+        )}
+        {gymRate !== null && (
+          <Chip label="🏋️ ジム率" value={`${gymRate}%`} color="#7A5BA8" />
         )}
       </div>
 

@@ -18,6 +18,7 @@ export interface DailyLog {
   // 認知・習慣
   meditation: HabitCheck;
   weightChecked: HabitCheck;
+  gym: HabitCheck;
   rating: Rating;
   reason: string;
   // 将来拡張用

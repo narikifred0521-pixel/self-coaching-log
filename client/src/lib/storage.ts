@@ -56,6 +56,7 @@ export function buildEmptyDailyLogs(startDate: string): DailyLog[] {
       flowState: "",
       meditation: "",
       weightChecked: "",
+      gym: "",
       rating: "",
       reason: "",
       weightKg: null,
